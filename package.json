@@ -1,0 +1,79 @@
+{
+  "name": "lightauth",
+  "version": "0.3.0",
+  "description": "LightAuth: lightweight authentication library with Arctic OAuth, Argon2id hashing, and Kysely-backed storage",
+  "keywords": [
+    "auth",
+    "arctic",
+    "oauth",
+    "argon2id",
+    "authentication",
+    "sessions",
+    "typescript",
+    "cloudflare-workers"
+  ],
+  "author": "Dundas",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dundas/lightauth"
+  },
+  "bugs": {
+    "url": "https://github.com/dundas/lightauth/issues"
+  },
+  "homepage": "https://github.com/dundas/lightauth#readme",
+  "private": false,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./react": {
+      "import": "./dist/react.js",
+      "types": "./dist/react.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json",
+    "prepack": "npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@node-rs/argon2": "^2.0.2",
+    "arctic": "^3.0.0",
+    "kysely": "^0.27.3",
+    "oslo": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/node": "^22.10.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "react": "^18.2.0",
+    "typescript": "^5.6.3",
+    "vitest": "^1.0.0"
+  }
+}
