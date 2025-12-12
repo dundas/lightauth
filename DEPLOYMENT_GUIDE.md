@@ -1,21 +1,21 @@
-# Deployment Guide: @mech/auth
+# Deployment Guide: LightAuth
 
 This guide helps you choose the right deployment platform and understand the specific configuration needed for each.
 
 ## Installation
 
-> **Note:** `@mech/auth` is currently distributed via GitHub and will be published to npm in a future release.
+> **Note:** LightAuth is published to npm as `lightauth`.
 
-### Install from GitHub
+### Install from npm
 
 ```bash
-npm install github:dundas/mech-auth better-auth kysely
+npm install lightauth better-auth kysely
 ```
 
 ### Install Specific Version
 
 ```bash
-npm install github:dundas/mech-auth#v0.2.0 better-auth kysely
+npm install lightauth@0.3.0
 ```
 
 ### Add to package.json
@@ -23,7 +23,7 @@ npm install github:dundas/mech-auth#v0.2.0 better-auth kysely
 ```json
 {
   "dependencies": {
-    "@mech/auth": "github:dundas/mech-auth#v0.2.0",
+    "lightauth": "^0.3.0",
     "better-auth": "^0.6.0",
     "kysely": "^0.27.3"
   }
@@ -67,12 +67,12 @@ npm install
 
 **1. Install dependencies:**
 ```bash
-npm install github:dundas/mech-auth better-auth kysely
+npm install lightauth better-auth kysely
 ```
 
 **2. Create `lib/auth.ts`:**
 ```ts
-import { createMechAuth } from "@mech/auth"
+import { createMechAuth } from "lightauth"
 import { nextCookies } from "better-auth/next-js"
 
 export const auth = createMechAuth({
@@ -129,12 +129,12 @@ vercel deploy --prod
 
 **1. Install dependencies:**
 ```bash
-npm install github:dundas/mech-auth better-auth kysely
+npm install lightauth better-auth kysely
 ```
 
 **2. Create `src/auth.ts`:**
 ```ts
-import { createMechAuth } from "@mech/auth"
+import { createMechAuth } from "lightauth"
 
 export interface Env {
   BETTER_AUTH_SECRET: string
@@ -220,12 +220,12 @@ wrangler deploy
 
 **1. Install dependencies:**
 ```bash
-npm install github:dundas/mech-auth better-auth kysely
+npm install lightauth better-auth kysely
 ```
 
 **2. Create `functions/api/auth/[[...all]].ts`:**
 ```ts
-import { createMechAuth } from "@mech/auth"
+import { createMechAuth } from "lightauth"
 
 interface Env {
   BETTER_AUTH_SECRET: string
@@ -312,12 +312,12 @@ wrangler pages deploy dist
 
 **1. Install dependencies:**
 ```bash
-npm install github:dundas/mech-auth better-auth kysely express
+npm install lightauth better-auth kysely express
 ```
 
 **2. Create `server/auth.ts`:**
 ```ts
-import { createMechAuth } from "@mech/auth"
+import { createMechAuth } from "lightauth"
 
 export const auth = createMechAuth({
   secret: process.env.BETTER_AUTH_SECRET!,

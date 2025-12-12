@@ -1,4 +1,4 @@
-# Mech Auth + Better Auth Integration Examples
+# LightAuth + Better Auth Integration Examples
 
 > **Legacy document:** This file describes an older approach based on Better Auth wrappers and `auth.handler`.
 > The current recommended entrypoint in this repo is the unified handler `handleMechAuthRequest(request, config)`.
@@ -49,7 +49,7 @@ Choose your deployment platform based on your architecture:
 1. Install dependencies in your Next.js app:
 
 ```bash
-npm install github:dundas/mech-auth better-auth kysely
+npm install lightauth better-auth kysely
 ```
 
 2. Create `.env.local` and add your credentials:
@@ -63,7 +63,7 @@ MECH_API_KEY=your-mech-api-key
 3. Create `lib/auth.ts`:
 
 ```ts
-import { createMechAuth } from "@mech/auth"
+import { createMechAuth } from "lightauth"
 import { nextCookies } from "better-auth/next-js"
 
 export const auth = createMechAuth({
@@ -92,14 +92,24 @@ import { toNextJsHandler } from "better-auth/next-js"
 export const { GET, POST } = toNextJsHandler(auth.handler)
 ```
 
-5. Create `lib/auth-client.ts`:
+5. Use LightAuth React hooks in client components:
 
-```ts
+```tsx
 "use client"
 
-import { mechAuthClient } from "@mech/auth/react"
+import { AuthProvider, useAuth } from "lightauth/react"
 
-export const { signIn, signUp, signOut, useSession } = mechAuthClient
+export function AppProviders({ children }: { children: React.ReactNode }) {
+  return <AuthProvider baseUrl="/api/auth">{children}</AuthProvider>
+}
+
+export function UserButton() {
+  const { user, loading, signIn, signOut } = useAuth()
+
+  if (loading) return null
+  if (!user) return <button onClick={() => signIn("user@example.com", "password")}>Sign In</button>
+  return <button onClick={() => signOut()}>Sign Out</button>
+}
 ```
 
 6. Use in React Server Components:
@@ -164,13 +174,13 @@ vercel deploy
 1. Install dependencies in your backend:
 
 ```bash
-npm install github:dundas/mech-auth better-auth kysely express
+npm install lightauth better-auth kysely express
 ```
 
 And in your Vite app:
 
 ```bash
-npm install github:dundas/mech-auth
+npm install lightauth
 ```
 
 2. Create `.env` in your backend directory:
@@ -185,7 +195,7 @@ NODE_ENV=development
 3. Create `server/auth.ts` in your backend.
 
 ```ts
-import { createMechAuth } from "@mech/auth"
+import { createMechAuth } from "lightauth"
 
 export const auth = createMechAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
@@ -214,12 +224,14 @@ app.all("/api/auth/*", toNodeHandler(auth))
 app.listen(8000)
 ```
 
-5. Create `src/auth-client.ts` in your Vite React app.
+5. Use LightAuth React hooks in your Vite app.
 
-```ts
-import { mechAuthClient } from "@mech/auth/react"
+```tsx
+import { AuthProvider } from "lightauth/react"
 
-export const { signIn, signUp, signOut, useSession } = mechAuthClient
+export function AppProviders({ children }: { children: React.ReactNode }) {
+  return <AuthProvider baseUrl="http://localhost:8000/api/auth">{children}</AuthProvider>
+}
 ```
 
 6. Use `useSession` and `signIn` or `signUp` in your React components.
@@ -231,7 +243,7 @@ export const { signIn, signUp, signOut, useSession } = mechAuthClient
 1. Install dependencies in your Worker project.
 
 ```bash
-npm install github:dundas/mech-auth better-auth kysely
+npm install lightauth better-auth kysely
 ```
 
 2. Configure secrets using Wrangler:
@@ -255,7 +267,7 @@ MECH_APP_ID = "550e8400-e29b-41d4-a716-446655440000"
 4. Create `src/auth.ts`:
 
 ```ts
-import { createMechAuth } from "@mech/auth"
+import { createMechAuth } from "lightauth"
 
 export interface Env {
   BETTER_AUTH_SECRET: string
@@ -320,13 +332,23 @@ wrangler deploy
 
 ```ts
 // In your frontend app
-import { createAuthClient } from "better-auth/react"
+import { AuthProvider, useAuth } from "lightauth/react"
 
-export const authClient = createAuthClient({
-  baseURL: "https://my-auth-worker.YOUR_SUBDOMAIN.workers.dev"
-})
+export const authClient = {
+  baseUrl: "https://my-auth-worker.YOUR_SUBDOMAIN.workers.dev"
+}
 
-export const { useSession, signIn, signUp, signOut } = authClient
+export function AppProviders({ children }: { children: React.ReactNode }) {
+  return <AuthProvider baseUrl={authClient.baseUrl}>{children}</AuthProvider>
+}
+
+export function UserButton() {
+  const { user, loading, signIn, signOut } = useAuth()
+
+  if (loading) return null
+  if (!user) return <button onClick={() => signIn("user@example.com", "password")}>Sign In</button>
+  return <button onClick={() => signOut()}>Sign Out</button>
+}
 ```
 
 ## Cloudflare Pages Functions (Frontend + Auth)
@@ -338,7 +360,7 @@ export const { useSession, signIn, signUp, signOut } = authClient
 1. Install dependencies:
 
 ```bash
-npm install github:dundas/mech-auth better-auth kysely
+npm install lightauth better-auth kysely
 ```
 
 2. Configure secrets using Wrangler:
@@ -361,7 +383,7 @@ MECH_APP_ID = "550e8400-e29b-41d4-a716-446655440000"
 4. Create `functions/api/auth/[[...all]].ts` (catch-all handler):
 
 ```ts
-import { createMechAuth } from "@mech/auth"
+import { createMechAuth } from "lightauth"
 
 interface Env {
   BETTER_AUTH_SECRET: string
@@ -393,32 +415,26 @@ export async function onRequest(context: { request: Request; env: Env }) {
 }
 ```
 
-5. Create your frontend app (e.g., `src/App.tsx`):
+5. Use LightAuth React hooks in your frontend:
 
 ```tsx
-import { mechAuthClient } from "@mech/auth/react"
+import { AuthProvider, useAuth } from "lightauth/react"
 
-const { signIn, signUp, signOut, useSession } = mechAuthClient
+export function AppProviders({ children }: { children: React.ReactNode }) {
+  return <AuthProvider baseUrl="/api/auth">{children}</AuthProvider>
+}
 
 export function App() {
-  const session = useSession()
+  const { user, loading, signIn, signOut } = useAuth()
 
-  if (session.data) {
-    return (
-      <div>
-        <p>Welcome, {session.data.user.email}!</p>
-        <button onClick={() => signOut()}>Sign Out</button>
-      </div>
-    )
-  }
+  if (loading) return null
+  if (!user) return <button onClick={() => signIn("user@example.com", "password")}>Sign In</button>
 
   return (
-    <button onClick={() => signIn.email({
-      email: "user@example.com",
-      password: "password"
-    })}>
-      Sign In
-    </button>
+    <div>
+      <p>Welcome, {user.email}!</p>
+      <button onClick={() => signOut()}>Sign Out</button>
+    </div>
   )
 }
 ```
@@ -436,7 +452,7 @@ If you need OAuth (GitHub, Google, etc.), you must handle all OAuth routes withi
 
 ```ts
 // functions/api/auth/[[...all]].ts
-import { createMechAuth } from "@mech/auth"
+import { createMechAuth } from "lightauth"
 
 interface Env {
   BETTER_AUTH_SECRET: string
