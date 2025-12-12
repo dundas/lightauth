@@ -11,6 +11,7 @@ import { handleOAuthRequest } from './oauth/handler.js'
 import { handleAuthRequest } from './auth/handler.js'
 import type { MechAuthConfig } from './types.js'
 import { handleCorsPreflightRequest, addCorsHeaders } from './utils/cors.js'
+import { normalizeAuthPath } from './utils/normalize-auth-path.js'
 
 /**
  * Unified authentication request handler
@@ -117,8 +118,7 @@ export async function handleMechAuthRequest(
  * @returns True if the path is an OAuth route
  */
 function isOAuthRoute(pathname: string): boolean {
-  // Remove trailing slash for consistent matching
-  const normalizedPath = pathname.replace(/\/$/, '')
+  const normalizedPath = normalizeAuthPath(pathname)
 
   // OAuth-specific patterns
   const oauthPatterns = [
@@ -140,18 +140,19 @@ function isOAuthRoute(pathname: string): boolean {
  * - POST `/auth/resend-verification` - Resend verification email
  * - POST `/auth/login` - User login
  * - POST `/auth/logout` - User logout
- * - POST `/auth/request-reset` - Request password reset
+ * - POST `/auth/request-reset` - Request password reset token
  * - POST `/auth/reset-password` - Reset password with token
+ * - GET  `/auth/session` - Get current user session
  *
  * @param pathname - URL pathname to check
  * @returns True if the path is an auth route
  */
 function isAuthRoute(pathname: string): boolean {
-  // Remove trailing slash for consistent matching
-  const normalizedPath = pathname.replace(/\/$/, '')
+  const normalizedPath = normalizeAuthPath(pathname)
 
   // Email/password auth patterns
   const authPatterns = [
+    /^\/auth\/session$/,
     /^\/auth\/register$/,
     /^\/auth\/verify-email$/,
     /^\/auth\/resend-verification$/,
@@ -191,6 +192,7 @@ export function getSupportedRoutes() {
       { method: 'GET', path: '/auth/google/callback', description: 'Google OAuth callback (alternative)' },
     ],
     auth: [
+      { method: 'GET', path: '/auth/session', description: 'Get current user session (from cookie)' },
       { method: 'POST', path: '/auth/register', description: 'User registration with email and password' },
       { method: 'POST', path: '/auth/verify-email', description: 'Verify email with token' },
       { method: 'POST', path: '/auth/resend-verification', description: 'Resend email verification token' },
